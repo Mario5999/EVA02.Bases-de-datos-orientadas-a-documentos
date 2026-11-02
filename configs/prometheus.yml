@@ -1,0 +1,26 @@
+# Configuración de Prometheus para el Experimento IT2iD (2026)
+# Cumple con el requisito: scrape_interval: 1s
+
+global:
+  scrape_interval: 1s
+  evaluation_interval: 1s
+
+scrape_configs:
+  # Monitoreo de cAdvisor (métricas de contenedor bajo cgroups v2: throttling, RSS, cpu)
+  - job_name: "cadvisor"
+    scrape_interval: 1s
+    static_configs:
+      - targets: ["cadvisor:8080"]
+
+  # Monitoreo de Node Exporter (métricas de host: I/O, disco, swap)
+  - job_name: "node-exporter"
+    scrape_interval: 1s
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  # Monitoreo de Prometheus
+  - job_name: "prometheus"
+    scrape_interval: 1s
+    static_configs:
+      - targets: ["localhost:9090"]
+

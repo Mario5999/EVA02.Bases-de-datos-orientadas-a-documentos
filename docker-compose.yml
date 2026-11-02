@@ -1,0 +1,99 @@
+services:
+  # ==========================================
+  # MOTOR DOCUMENTAL: MongoDB (WiredTiger)
+  # ==========================================
+  mongodb:
+    image: mongo:latest
+    container_name: it2id_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=benchmark_db
+    volumes:
+      - mongo_data:/data/db
+    deploy:
+      resources:
+        limits:
+          cpus: "${CPUS_LIMIT:-4.0}"
+          memory: "${MEM_LIMIT:-4096M}"
+    memswap_limit: "${MEM_LIMIT:-4096M}"
+
+  # ==========================================
+  # MOTOR RELACIONAL CON JSONB: PostgreSQL
+  # ==========================================
+  postgres:
+    image: postgres:16
+    container_name: it2id_postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=benchmark
+      - POSTGRES_PASSWORD=benchmark
+      - POSTGRES_DB=benchmark_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: "${CPUS_LIMIT:-4.0}"
+          memory: "${MEM_LIMIT:-4096M}"
+    memswap_limit: "${MEM_LIMIT:-4096M}"
+
+  # ==========================================
+  # TELEMETRÍA: cAdvisor (cgroups v2)
+  # ==========================================
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: it2id_cadvisor
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "8085:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+
+  # ==========================================
+  # TELEMETRÍA: Node Exporter (Host / Disco)
+  # ==========================================
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: it2id_node_exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+
+  # ==========================================
+  # RECOLECTOR DE MÉTRICAS: Prometheus
+  # ==========================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: it2id_prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--storage.tsdb.retention.time=15d"
+
+volumes:
+  mongo_data:
+  postgres_data:
+  prometheus_data:

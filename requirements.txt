@@ -1,0 +1,17 @@
+# Conectores de Base de Datos
+pymongo>=4.6.0
+psycopg2-binary>=2.9.9
+
+# Generación de Datos Sintéticos
+faker>=24.0.0
+
+# Telemetría y Consulta a API de Prometheus
+requests>=2.31.0
+
+# Procesamiento de Datos y Estadísticas
+pandas>=2.2.0
+numpy>=1.26.0
+
+# Generación de Gráficas para el Reporte
+matplotlib>=3.8.0
+seaborn>=0.13.0
